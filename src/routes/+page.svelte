@@ -3,24 +3,42 @@
     ConnectButton,
     testnetWalletAdapter as walletAdapter
   } from '@builders-of-stuff/svelte-sui-wallet-adapter';
+  import { Transaction } from '@mysten/sui/transactions';
+
   import { Button } from '$lib/components/ui/button';
+
   import ResultsSection from './results-section.svelte';
+  import { PACKAGE_ID } from '$lib/shared/contracts.constants';
 
   let results = $state('');
   let loading = $state(false);
 
-  async function getBalance() {
+  async function createThing() {
     if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
       results = 'Wallet not connected';
       return;
     }
 
     loading = true;
+
+    const tx = new Transaction();
+
+    const thing = tx.moveCall({
+      target: `${PACKAGE_ID}::main::new_thing`,
+      arguments: []
+    });
+
+    tx.transferObjects([thing], walletAdapter.currentAccount.address);
+
     try {
-      const balance = await walletAdapter.suiClient.getBalance({
-        owner: walletAdapter.currentAccount.address
+      const { bytes, signature } = await walletAdapter.signTransaction(tx as any, {});
+
+      const executedTx = await walletAdapter.executeTransaction({
+        bytes,
+        signature
       });
-      results = JSON.stringify(balance, null, 2);
+
+      console.log('response: ', executedTx);
     } catch (error) {
       results = `Error: ${error}`;
     } finally {
@@ -28,7 +46,7 @@
     }
   }
 
-  async function getAccountInfo() {
+  async function updateThing() {
     if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
       results = 'Wallet not connected';
       return;
@@ -120,20 +138,12 @@
       <!-- Action Buttons -->
       <div class="space-y-6">
         <div class="flex flex-wrap justify-center gap-4">
-          <Button onclick={getBalance} disabled={loading} variant="default">
-            Get Balance
+          <Button onclick={createThing} disabled={loading} variant="default">
+            Create thing
           </Button>
 
-          <Button onclick={getAccountInfo} disabled={loading} variant="secondary">
-            Get Account Info
-          </Button>
-
-          <Button onclick={signMessage} disabled={loading} variant="outline">
-            Sign Message
-          </Button>
-
-          <Button onclick={getOwnedObjects} disabled={loading} variant="secondary">
-            Get Owned Objects
+          <Button onclick={updateThing} disabled={loading} variant="secondary">
+            Update thing
           </Button>
         </div>
 
