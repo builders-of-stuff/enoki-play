@@ -9,8 +9,10 @@
 
   import ResultsSection from './results-section.svelte';
   import { PACKAGE_ID } from '$lib/shared/contracts.constants';
+  import type { SuiObjectData } from '@mysten/sui/client';
 
   let results = $state('');
+  let ownedObjects = $state<SuiObjectData[]>([]);
   let loading = $state(false);
 
   async function createThing() {
@@ -106,6 +108,37 @@
       loading = false;
     }
   }
+
+  async function getOwnedObjectsFromPackage() {
+    if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
+      results = 'Wallet not connected';
+      ownedObjects = [];
+      return;
+    }
+
+    loading = true;
+    try {
+      const response = await walletAdapter.suiClient.getOwnedObjects({
+        owner: walletAdapter.currentAccount.address,
+        filter: {
+          Package: PACKAGE_ID
+        },
+        options: {
+          showContent: true,
+          showDisplay: true,
+          showType: true
+        }
+      });
+
+      ownedObjects = response.data.map(obj => obj.data!).filter(Boolean);
+      results = '';
+    } catch (error) {
+      results = `Error: ${error}`;
+      ownedObjects = [];
+    } finally {
+      loading = false;
+    }
+  }
 </script>
 
 <div class="min-h-screen bg-background">
@@ -145,10 +178,14 @@
           <Button onclick={updateThing} disabled={loading} variant="secondary">
             Update thing
           </Button>
+
+          <Button onclick={getOwnedObjectsFromPackage} disabled={loading} variant="outline">
+            Get My Objects
+          </Button>
         </div>
 
         <!-- Results Section -->
-        <ResultsSection {results} {loading} />
+        <ResultsSection {results} {loading} {ownedObjects} />
       </div>
     </div>
   </main>

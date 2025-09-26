@@ -1,10 +1,14 @@
 <script lang="ts">
+  import ObjectCard from '$lib/components/object-card.svelte';
+  import type { SuiObjectData } from '@mysten/sui/client';
+
   interface Props {
     results: string;
     loading: boolean;
+    ownedObjects: any;
   }
 
-  let { results, loading }: Props = $props();
+  let { results, loading, ownedObjects }: Props = $props();
 </script>
 
 <div class="rounded-lg border border-border bg-card">
@@ -18,6 +22,18 @@
           class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
         ></div>
         Loading...
+      </div>
+    {:else if ownedObjects.length > 0}
+      <div class="space-y-4">
+        <div class="text-sm text-muted-foreground">
+          Found {ownedObjects.length} object{ownedObjects.length === 1 ? '' : 's'} from your
+          package
+        </div>
+        <div class="space-y-4">
+          {#each ownedObjects as object (object.objectId)}
+            <ObjectCard {object} />
+          {/each}
+        </div>
       </div>
     {:else if results}
       <pre
