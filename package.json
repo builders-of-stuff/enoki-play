@@ -51,6 +51,7 @@
     ]
   },
   "dependencies": {
-    "@builders-of-stuff/svelte-sui-wallet-adapter": "^2.1.0"
+    "@builders-of-stuff/svelte-sui-wallet-adapter": "^2.1.0",
+    "@mysten/sui": "^1.38.0"
   }
 }
