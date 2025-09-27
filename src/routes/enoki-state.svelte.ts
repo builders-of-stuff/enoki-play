@@ -98,20 +98,16 @@ class EnokiState {
     }
   }
 
-  async getOwnedObjects() {
-    console.log('1');
+  getOwnedObjects = async () => {
     if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
       this.results = 'Wallet not connected';
       this.ownedObjects = [];
-      console.log('2');
       return;
     }
 
-    console.log('3');
     this.loading = true;
     try {
-      console.log('4');
-      const response = await walletAdapter.suiClient.getOwnedObjects({
+      const response = (await walletAdapter.suiClient.getOwnedObjects({
         owner: walletAdapter.currentAccount.address,
         filter: {
           Package: PACKAGE_ID
@@ -121,23 +117,17 @@ class EnokiState {
           showDisplay: true,
           showType: true
         }
-      });
+      })) as any;
 
-      console.log('Owned objects response: ', response);
-
-      this.ownedObjects = response.data.map((obj) => obj.data!).filter(Boolean);
-
-      console.log('Owned objects: ', this.ownedObjects);
+      this.ownedObjects = response.data.map((obj: any) => obj.data!).filter(Boolean);
       this.results = '';
     } catch (error) {
-      console.log('5');
-      console.log('error: ', error);
       this.results = `Error: ${error}`;
       this.ownedObjects = [];
     } finally {
       this.loading = false;
     }
-  }
+  };
 }
 
 export const enokiState = new EnokiState();

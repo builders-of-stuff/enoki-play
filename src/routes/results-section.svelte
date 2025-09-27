@@ -1,10 +1,6 @@
 <script lang="ts">
   import ObjectCard from '$lib/components/object-card.svelte';
   import { enokiState } from './enoki-state.svelte';
-
-  $effect(() => {
-    console.log('enokiState changed: ', enokiState.ownedObjects);
-  });
 </script>
 
 <div class="rounded-lg border border-border bg-card">
