@@ -6,9 +6,11 @@
     results: string;
     loading: boolean;
     ownedObjects: any;
+    selectedObjectId: string | null;
+    onSelectObject: (objectId: string) => void;
   }
 
-  let { results, loading, ownedObjects }: Props = $props();
+  let { results, loading, ownedObjects, selectedObjectId, onSelectObject }: Props = $props();
 </script>
 
 <div class="rounded-lg border border-border bg-card">
@@ -31,7 +33,7 @@
         </div>
         <div class="space-y-4">
           {#each ownedObjects as object (object.objectId)}
-            <ObjectCard {object} />
+            <ObjectCard {object} {selectedObjectId} {onSelectObject} />
           {/each}
         </div>
       </div>

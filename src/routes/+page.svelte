@@ -14,6 +14,7 @@
   let results = $state('');
   let ownedObjects = $state<SuiObjectData[]>([]);
   let loading = $state(false);
+  let selectedObjectId = $state<string | null>(null);
 
   async function createThing() {
     if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
@@ -48,60 +49,54 @@
     }
   }
 
+  function handleObjectSelect(objectId: string) {
+    selectedObjectId = selectedObjectId === objectId ? null : objectId;
+  }
+
   async function updateThing() {
     if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
       results = 'Wallet not connected';
       return;
     }
 
-    loading = true;
-    try {
-      const accountInfo = {
-        address: walletAdapter.currentAccount.address,
-        publicKey: walletAdapter.currentAccount.publicKey,
-        chains: walletAdapter.currentAccount.chains
-      };
-      results = JSON.stringify(accountInfo, null, 2);
-    } catch (error) {
-      results = `Error: ${error}`;
-    } finally {
-      loading = false;
-    }
-  }
-
-  async function signMessage() {
-    if (!walletAdapter.isConnected) {
-      results = 'Wallet not connected';
+    // Get owned objects first to find a Thing to update
+    if (ownedObjects.length === 0) {
+      results = 'No Thing objects found. Create a Thing first.';
       return;
     }
 
     loading = true;
-    try {
-      const message = 'Hello from Enoki Play!';
-      const signedMessage = await walletAdapter.signPersonalMessage({
-        message: new TextEncoder().encode(message)
-      });
-      results = JSON.stringify({ message, signature: signedMessage }, null, 2);
-    } catch (error) {
-      results = `Error: ${error}`;
-    } finally {
-      loading = false;
-    }
-  }
 
-  async function getOwnedObjects() {
-    if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
-      results = 'Wallet not connected';
-      return;
+    const tx = new Transaction();
+
+    // Use selected object or fallback to first one if none selected
+    let thingToUpdate = ownedObjects[0]; // default fallback
+    if (selectedObjectId) {
+      const selectedObject = ownedObjects.find(obj => obj.objectId === selectedObjectId);
+      if (selectedObject) {
+        thingToUpdate = selectedObject;
+      }
     }
 
-    loading = true;
+    tx.moveCall({
+      target: `${PACKAGE_ID}::main::update_thing`,
+      arguments: [
+        tx.object(thingToUpdate.objectId),
+        tx.pure.u64(150), // hardcoded health value
+        tx.pure.string("updated enoki") // hardcoded name value
+      ]
+    });
+
     try {
-      const objects = await walletAdapter.suiClient.getOwnedObjects({
-        owner: walletAdapter.currentAccount.address,
-        options: { showContent: true }
+      const { bytes, signature } = await walletAdapter.signTransaction(tx as any, {});
+
+      const executedTx = await walletAdapter.executeTransaction({
+        bytes,
+        signature
       });
-      results = JSON.stringify(objects, null, 2);
+
+      console.log('Update response: ', executedTx);
+      results = `Thing updated successfully! Transaction: ${executedTx.digest}`;
     } catch (error) {
       results = `Error: ${error}`;
     } finally {
@@ -130,7 +125,7 @@
         }
       });
 
-      ownedObjects = response.data.map(obj => obj.data!).filter(Boolean);
+      ownedObjects = response.data.map((obj) => obj.data!).filter(Boolean);
       results = '';
     } catch (error) {
       results = `Error: ${error}`;
@@ -179,13 +174,17 @@
             Update thing
           </Button>
 
-          <Button onclick={getOwnedObjectsFromPackage} disabled={loading} variant="outline">
+          <Button
+            onclick={getOwnedObjectsFromPackage}
+            disabled={loading}
+            variant="outline"
+          >
             Get My Objects
           </Button>
         </div>
 
         <!-- Results Section -->
-        <ResultsSection {results} {loading} {ownedObjects} />
+        <ResultsSection {results} {loading} {ownedObjects} {selectedObjectId} onSelectObject={handleObjectSelect} />
       </div>
     </div>
   </main>

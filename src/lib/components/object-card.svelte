@@ -3,9 +3,13 @@
 
   interface Props {
     object: SuiObjectData;
+    selectedObjectId: string | null;
+    onSelectObject: (objectId: string) => void;
   }
 
-  let { object }: Props = $props();
+  let { object, selectedObjectId, onSelectObject }: Props = $props();
+
+  const isSelected = $derived(selectedObjectId === object.objectId);
 
   function getObjectType(type: string | null | undefined) {
     if (!type) return 'Unknown';
@@ -19,7 +23,10 @@
   }
 </script>
 
-<div class="w-full border border-border rounded-lg bg-card p-6 space-y-4">
+<div
+  class="w-full border rounded-lg bg-card p-6 space-y-4 cursor-pointer transition-all hover:shadow-md {isSelected ? 'border-primary bg-primary/5' : 'border-border'}"
+  onclick={() => onSelectObject(object.objectId)}
+>
   <!-- Header Row -->
   <div class="flex items-center justify-between border-b border-border pb-3">
     <div class="flex items-center gap-4">
@@ -27,6 +34,11 @@
       <span class="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
         {getObjectType(object.type)}
       </span>
+      {#if isSelected}
+        <span class="text-xs bg-green-500/20 text-green-700 px-2 py-1 rounded font-medium">
+          Selected
+        </span>
+      {/if}
     </div>
   </div>
 
