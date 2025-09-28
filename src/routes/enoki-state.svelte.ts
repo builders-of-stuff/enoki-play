@@ -55,54 +55,62 @@ class EnokiState {
 
     this.loading = true;
 
-    const tx = new Transaction();
+    try {
+      const tx = new Transaction();
 
-    const thing = tx.moveCall({
-      target: `${PACKAGE_ID}::main::new_thing`,
-      arguments: []
-    });
+      const thing = tx.moveCall({
+        target: `${PACKAGE_ID}::main::new_thing`,
+        arguments: []
+      });
 
-    tx.transferObjects([thing], walletAdapter.currentAccount.address);
-    // tx.setSender(walletAdapter.currentAccount.address);
+      tx.transferObjects([thing], walletAdapter.currentAccount.address);
 
-    // Build transaction
-    const txBytes = await tx.build({
-      client: walletAdapter.suiClient,
-      onlyTransactionKind: true
-    });
+      // Build transaction
+      const txBytes = await tx.build({
+        client: walletAdapter.suiClient,
+        onlyTransactionKind: true
+      });
 
-    // Convert txBytes to base64 string for Enoki API
-    const transactionBytesBase64 = btoa(String.fromCharCode(...txBytes));
+      // Convert txBytes to base64 string for Enoki API
+      const transactionBytesBase64 = btoa(String.fromCharCode(...txBytes));
 
-    console.log('1');
-    // Sponsor transaction
-    const sponsoredResponse = await sponsorTransaction({
-      transactionBytes: transactionBytesBase64,
-      sender: walletAdapter.currentAccount.address,
-      allowedMoveCallTargets: [`${PACKAGE_ID}::main::new_thing`],
-      allowedAddresses: [walletAdapter.currentAccount.address]
-    });
+      // Sponsor transaction
+      const sponsoredResponse = await sponsorTransaction({
+        transactionBytes: transactionBytesBase64,
+        sender: walletAdapter.currentAccount.address,
+        allowedMoveCallTargets: [`${PACKAGE_ID}::main::new_thing`],
+        allowedAddresses: [walletAdapter.currentAccount.address]
+      });
 
-    if (!sponsoredResponse.success) {
-      console.log('Failed to sponsor transaction');
+      if (!sponsoredResponse.success) {
+        this.results = 'Failed to sponsor transaction';
+        return;
+      }
+
+      const { bytes, digest } = sponsoredResponse;
+
+      // Sign transaction
+      const { signature } = await walletAdapter.signTransaction(bytes as string, {});
+
+      // Execute transaction
+      const response = await executeTransaction({
+        signature,
+        digest: digest!
+      });
+
+      if (response.success) {
+        this.results = `Sponsored thing created successfully! Transaction: ${digest}`;
+
+        // Auto-refresh objects to show newly created object
+        await this.getOwnedObjects();
+      } else {
+        this.results = 'Failed to execute sponsored transaction';
+      }
+    } catch (error) {
+      this.results = `Error: ${error}`;
+    } finally {
+      this.loading = false;
     }
-    console.log('2');
-
-    const { bytes, digest } = sponsoredResponse;
-
-    // Sign transaction
-    const { signature } = await walletAdapter.signTransaction(bytes as any, {});
-
-    console.log('3');
-
-    // Execute transaction
-    const response = await executeTransaction({
-      signature,
-      digest: digest!
-    });
-
-    console.log('4');
-    console.log('response: ', response);
   };
 
   selectObject(objectId: string) {

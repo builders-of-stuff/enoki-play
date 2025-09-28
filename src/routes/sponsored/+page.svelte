@@ -93,14 +93,6 @@
           </Button>
 
           <Button
-            onclick={enokiState.updateThing}
-            disabled={enokiState.loading}
-            variant="secondary"
-          >
-            Update thing
-          </Button>
-
-          <Button
             onclick={enokiState.getOwnedObjects}
             disabled={enokiState.loading}
             variant="outline"

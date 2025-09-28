@@ -21,6 +21,9 @@ const enokiClient = new EnokiClient({
   apiKey: env.PRIVATE_ENOKI_API_KEY
 });
 
+/**
+ * Sponsor transaction
+ */
 export const sponsorTransaction = command(
   SponsorTransactionSchema,
   async ({ transactionBytes, sender, allowedMoveCallTargets, allowedAddresses }) => {
@@ -52,6 +55,9 @@ export const sponsorTransaction = command(
   }
 );
 
+/**
+ * Execute transaction
+ */
 export const executeTransaction = command(
   ExecuteTransactionSchema,
   async ({ digest, signature }) => {
