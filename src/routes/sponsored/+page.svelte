@@ -73,7 +73,9 @@
     <div class="mx-auto max-w-2xl space-y-8">
       <!-- Welcome Section -->
       <div class="space-y-4 text-center">
-        <h2 class="text-3xl font-semibold text-foreground">Sponsored Testing Environment</h2>
+        <h2 class="text-3xl font-semibold text-foreground">
+          Sponsored Testing Environment
+        </h2>
         <p class="text-lg text-muted-foreground">
           Connect your wallet and test sponsored blockchain interactions
         </p>
@@ -83,7 +85,7 @@
       <div class="space-y-6">
         <div class="flex flex-wrap justify-center gap-4">
           <Button
-            onclick={enokiState.createThing}
+            onclick={enokiState.createThingSponsored}
             disabled={enokiState.loading}
             variant="default"
           >
@@ -127,12 +129,16 @@
 
         <!-- Wallet Info Section -->
         {#if showAddress}
-          <div class="mx-auto max-w-md rounded-lg border border-border bg-card p-4 text-center">
-            <h3 class="mb-2 text-sm font-medium text-muted-foreground">Wallet Status</h3>
+          <div
+            class="mx-auto max-w-md rounded-lg border border-border bg-card p-4 text-center"
+          >
+            <h3 class="mb-2 text-sm font-medium text-muted-foreground">
+              Wallet Status
+            </h3>
             {#if walletAdapter.isConnected && walletAdapter.currentAccount}
               <div class="space-y-2">
                 <div class="text-sm text-green-600">✓ Connected</div>
-                <div class="break-all rounded bg-muted p-2 text-xs font-mono">
+                <div class="rounded bg-muted p-2 font-mono text-xs break-all">
                   {walletAdapter.currentAccount.address}
                 </div>
               </div>

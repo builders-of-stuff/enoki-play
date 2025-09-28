@@ -2,6 +2,7 @@ import { testnetWalletAdapter as walletAdapter } from '@builders-of-stuff/svelte
 import { Transaction } from '@mysten/sui/transactions';
 import type { SuiObjectData } from '@mysten/sui/client';
 import { PACKAGE_ID } from '$lib/shared/contracts.constants';
+import { executeTransaction, sponsorTransaction } from './sponsored/sponsored.remote';
 
 class EnokiState {
   results = $state('');
@@ -44,6 +45,56 @@ class EnokiState {
     } finally {
       this.loading = false;
     }
+  };
+
+  createThingSponsored = async () => {
+    if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
+      this.results = 'Wallet not connected';
+      return;
+    }
+
+    this.loading = true;
+
+    const tx = new Transaction();
+
+    const thing = tx.moveCall({
+      target: `${PACKAGE_ID}::main::new_thing`,
+      arguments: []
+    });
+
+    tx.transferObjects([thing], walletAdapter.currentAccount.address);
+    // tx.setSender(walletAdapter.currentAccount.address);
+
+    // Build transaction
+    const txBytes = await tx.build({
+      client: walletAdapter.suiClient,
+      onlyTransactionKind: true
+    });
+
+    // Sponsor transaction
+    const sponsoredResponse = await sponsorTransaction({
+      transactionBytes: txBytes,
+      sender: walletAdapter.currentAccount.address,
+      allowedMoveCallTargets: [`${PACKAGE_ID}::main::new_thing`],
+      allowedAddresses: [walletAdapter.currentAccount.address]
+    });
+
+    if (!sponsoredResponse.success) {
+      console.log('Failed to sponsor transaction');
+    }
+
+    const { bytes, digest } = sponsoredResponse;
+
+    // Sign transaction
+    const { signature } = await walletAdapter.signTransaction(tx, {});
+
+    // Execute transaction
+    const response = await executeTransaction({
+      signature,
+      digest: digest!
+    });
+
+    console.log('response: ', response);
   };
 
   selectObject(objectId: string) {
@@ -96,7 +147,7 @@ class EnokiState {
       this.results = `Thing updated successfully! Transaction: ${executedTx.digest}`;
 
       // Auto-refresh objects to show updated data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       await this.getOwnedObjects();
     } catch (error) {
       this.results = `Error: ${error}`;
