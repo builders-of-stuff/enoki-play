@@ -71,9 +71,13 @@ class EnokiState {
       onlyTransactionKind: true
     });
 
+    // Convert txBytes to base64 string for Enoki API
+    const transactionBytesBase64 = btoa(String.fromCharCode(...txBytes));
+
+    console.log('1');
     // Sponsor transaction
     const sponsoredResponse = await sponsorTransaction({
-      transactionBytes: txBytes,
+      transactionBytes: transactionBytesBase64,
       sender: walletAdapter.currentAccount.address,
       allowedMoveCallTargets: [`${PACKAGE_ID}::main::new_thing`],
       allowedAddresses: [walletAdapter.currentAccount.address]
@@ -82,11 +86,14 @@ class EnokiState {
     if (!sponsoredResponse.success) {
       console.log('Failed to sponsor transaction');
     }
+    console.log('2');
 
     const { bytes, digest } = sponsoredResponse;
 
     // Sign transaction
-    const { signature } = await walletAdapter.signTransaction(tx, {});
+    const { signature } = await walletAdapter.signTransaction(bytes as any, {});
+
+    console.log('3');
 
     // Execute transaction
     const response = await executeTransaction({
@@ -94,6 +101,7 @@ class EnokiState {
       digest: digest!
     });
 
+    console.log('4');
     console.log('response: ', response);
   };
 

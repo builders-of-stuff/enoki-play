@@ -36,6 +36,8 @@ export const sponsorTransaction = command(
         allowedAddresses
       });
 
+      console.log('sponsored response backend: ', response);
+
       return {
         success: true,
         bytes: response.bytes,
