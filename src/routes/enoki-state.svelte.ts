@@ -9,7 +9,7 @@ class EnokiState {
   loading = $state(false);
   selectedObjectId = $state<string | null>(null);
 
-  async createThing() {
+  createThing = async () => {
     if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
       this.results = 'Wallet not connected';
       return;
@@ -36,18 +36,21 @@ class EnokiState {
 
       console.log('response: ', executedTx);
       this.results = `Thing created successfully! Transaction: ${executedTx.digest}`;
+
+      // Auto-refresh objects to show newly created object
+      await this.getOwnedObjects();
     } catch (error) {
       this.results = `Error: ${error}`;
     } finally {
       this.loading = false;
     }
-  }
+  };
 
   selectObject(objectId: string) {
     this.selectedObjectId = this.selectedObjectId === objectId ? null : objectId;
   }
 
-  async updateThing() {
+  updateThing = async () => {
     if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {
       this.results = 'Wallet not connected';
       return;
@@ -76,8 +79,8 @@ class EnokiState {
       target: `${PACKAGE_ID}::main::update_thing`,
       arguments: [
         tx.object(thingToUpdate.objectId),
-        tx.pure.u64(150),
-        tx.pure.string('updated enoki')
+        tx.pure.u64(Math.floor(Math.random() * 1000)),
+        tx.pure.string(new Date().toISOString().slice(0, 16).replace('T', ' '))
       ]
     });
 
@@ -91,12 +94,16 @@ class EnokiState {
 
       console.log('Update response: ', executedTx);
       this.results = `Thing updated successfully! Transaction: ${executedTx.digest}`;
+
+      // Auto-refresh objects to show updated data
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await this.getOwnedObjects();
     } catch (error) {
       this.results = `Error: ${error}`;
     } finally {
       this.loading = false;
     }
-  }
+  };
 
   getOwnedObjects = async () => {
     if (!walletAdapter.isConnected || !walletAdapter.currentAccount) {

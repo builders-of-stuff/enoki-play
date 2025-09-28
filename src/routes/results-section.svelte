@@ -25,11 +25,7 @@
         </div>
         <div class="space-y-4">
           {#each enokiState.ownedObjects as object (object.objectId)}
-            <ObjectCard
-              {object}
-              selectedObjectId={enokiState.selectedObjectId}
-              onSelectObject={enokiState.selectObject}
-            />
+            <ObjectCard {object} />
           {/each}
         </div>
       </div>
