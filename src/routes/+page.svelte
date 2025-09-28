@@ -3,11 +3,36 @@
     ConnectButton,
     testnetWalletAdapter as walletAdapter
   } from '@builders-of-stuff/svelte-sui-wallet-adapter';
+  import { registerEnokiWallets } from '@mysten/enoki';
+  import { isEnokiWallet } from '@mysten/enoki';
+
+  import { env } from '$env/dynamic/public';
 
   import { Button } from '$lib/components/ui/button';
 
   import ResultsSection from './results-section.svelte';
   import { enokiState } from './enoki-state.svelte';
+
+  let googleWallet = $state();
+
+  const registerEnokiWallet = () => {
+    const { wallets } = registerEnokiWallets({
+      client: walletAdapter.suiClient,
+      network: 'testnet',
+      apiKey: env.PUBLIC_ENOKI_API_KEY || '',
+      providers: {
+        google: {
+          clientId: env.PUBLIC_GOOGLE_CLIENT_ID || ''
+        }
+      }
+    });
+
+    const _wallets = walletAdapter.wallets;
+    googleWallet = wallets.google;
+
+    console.log('wallets: ', wallets);
+    _wallets.forEach((w) => console.log(w.name));
+  };
 </script>
 
 <div class="min-h-screen bg-background">
@@ -21,6 +46,18 @@
 
       <!-- SUI Wallet Adapter in top right -->
       <div class="flex items-center gap-4">
+        {#if googleWallet}
+          <Button
+            onclick={() => {
+              walletAdapter.connectWallet({
+                wallet: googleWallet
+              });
+            }}
+            variant="outline"
+          >
+            Sign in with Google
+          </Button>
+        {/if}
         <ConnectButton {walletAdapter} />
       </div>
     </div>
@@ -62,6 +99,14 @@
             variant="outline"
           >
             Get My Objects
+          </Button>
+
+          <Button
+            onclick={registerEnokiWallet}
+            disabled={enokiState.loading}
+            variant="outline"
+          >
+            Register Enoki Wallet
           </Button>
         </div>
 
