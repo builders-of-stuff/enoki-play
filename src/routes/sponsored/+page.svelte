@@ -10,8 +10,8 @@
 
   import { Button } from '$lib/components/ui/button';
 
-  import ResultsSection from './results-section.svelte';
-  import { enokiState } from './enoki-state.svelte';
+  import ResultsSection from '../results-section.svelte';
+  import { enokiState } from '../enoki-state.svelte';
 
   let googleWallet = $state();
   let showAddress = $state(false);
@@ -45,8 +45,8 @@
   <header class="border-b border-border bg-card">
     <div class="container mx-auto flex items-center justify-between px-4 py-4">
       <div>
-        <h1 class="text-2xl font-bold text-foreground">Enoki Play</h1>
-        <p class="text-sm text-muted-foreground">Testing Environment</p>
+        <h1 class="text-2xl font-bold text-foreground">Enoki Play - Sponsored</h1>
+        <p class="text-sm text-muted-foreground">Sponsored Content Testing</p>
       </div>
 
       <!-- SUI Wallet Adapter in top right -->
@@ -73,9 +73,9 @@
     <div class="mx-auto max-w-2xl space-y-8">
       <!-- Welcome Section -->
       <div class="space-y-4 text-center">
-        <h2 class="text-3xl font-semibold text-foreground">Testing Environment</h2>
+        <h2 class="text-3xl font-semibold text-foreground">Sponsored Testing Environment</h2>
         <p class="text-lg text-muted-foreground">
-          Connect your wallet and test blockchain interactions
+          Connect your wallet and test sponsored blockchain interactions
         </p>
       </div>
 
@@ -127,16 +127,12 @@
 
         <!-- Wallet Info Section -->
         {#if showAddress}
-          <div
-            class="mx-auto max-w-md rounded-lg border border-border bg-card p-4 text-center"
-          >
-            <h3 class="mb-2 text-sm font-medium text-muted-foreground">
-              Wallet Status
-            </h3>
+          <div class="mx-auto max-w-md rounded-lg border border-border bg-card p-4 text-center">
+            <h3 class="mb-2 text-sm font-medium text-muted-foreground">Wallet Status</h3>
             {#if walletAdapter.isConnected && walletAdapter.currentAccount}
               <div class="space-y-2">
                 <div class="text-sm text-green-600">✓ Connected</div>
-                <div class="rounded bg-muted p-2 font-mono text-xs break-all">
+                <div class="break-all rounded bg-muted p-2 text-xs font-mono">
                   {walletAdapter.currentAccount.address}
                 </div>
               </div>
