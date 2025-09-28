@@ -14,6 +14,7 @@
   import { enokiState } from './enoki-state.svelte';
 
   let googleWallet = $state();
+  let showAddress = $state(false);
 
   const registerEnokiWallet = () => {
     const { wallets } = registerEnokiWallets({
@@ -32,6 +33,10 @@
 
     console.log('wallets: ', wallets);
     _wallets.forEach((w) => console.log(w.name));
+  };
+
+  const showWalletAddress = () => {
+    showAddress = !showAddress;
   };
 </script>
 
@@ -109,6 +114,33 @@
             Register Enoki Wallet
           </Button>
         </div>
+
+        <div class="flex flex-wrap justify-center gap-4">
+          <Button
+            onclick={showWalletAddress}
+            disabled={enokiState.loading}
+            variant="outline"
+          >
+            {showAddress ? 'Hide' : 'Show'} Wallet Address
+          </Button>
+        </div>
+
+        <!-- Wallet Info Section -->
+        {#if showAddress}
+          <div class="mx-auto max-w-md rounded-lg border border-border bg-card p-4 text-center">
+            <h3 class="mb-2 text-sm font-medium text-muted-foreground">Wallet Status</h3>
+            {#if walletAdapter.isConnected && walletAdapter.currentAccount}
+              <div class="space-y-2">
+                <div class="text-sm text-green-600">✓ Connected</div>
+                <div class="break-all rounded bg-muted p-2 text-xs font-mono">
+                  {walletAdapter.currentAccount.address}
+                </div>
+              </div>
+            {:else}
+              <div class="text-sm text-muted-foreground">No wallet connected</div>
+            {/if}
+          </div>
+        {/if}
 
         <!-- Results Section -->
         <ResultsSection />
