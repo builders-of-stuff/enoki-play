@@ -61,7 +61,7 @@ export const sponsorTransaction = command(
 export const executeTransaction = command(
   ExecuteTransactionSchema,
   async ({ digest, signature }) => {
-    console.log('executing transaction');
+    console.log('executing sponsored transaction');
 
     try {
       const response = await enokiClient.executeSponsoredTransaction({
